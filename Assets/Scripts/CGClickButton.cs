@@ -2,14 +2,11 @@ using UnityEngine;
 
 public class CGClickButton : MonoBehaviour
 {
-    public int currentPoint = 0;
-    public int currentPerClick = 1;
-
-    public CGDataController datacontroller;
-
-    public void OnClick()
+    public Animator anim;
+    public void OnMouseDown()
     {
-        int perClick = datacontroller.GetPerClick();
-        datacontroller.AddPoint(perClick);
+        CGDataController.Instance.Point += CGDataController.Instance.PerClick;
+
+        anim.SetTrigger("OnClick");
     }
 }

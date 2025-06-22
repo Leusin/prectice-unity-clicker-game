@@ -3,7 +3,15 @@ using TMPro;
 
 public class CGUpgradeButton : MonoBehaviour
 {
+    //
+    // UI Section
+    //
+    
     public TMP_Text upgradeDisplayer;
+
+    //
+    // Managed Data Section
+    //
 
     public string upgradeName; // 데이터를 저장할 때 키로도 사용
 
@@ -12,12 +20,15 @@ public class CGUpgradeButton : MonoBehaviour
 
     [HideInInspector]
     public int pointByUpgrade;
-    public int startPointByUpgrade = 1;
-
     [HideInInspector]
     public int currentCost = 1;
-    public int startCurrentCost = 1;
 
+    //
+    //
+    //
+
+    public int startPointByUpgrade = 1;
+    public int startCurrentCost = 1;
 
     public float upgradePow = 1.07f;
     public float costPow = 3.14f;
@@ -30,11 +41,11 @@ public class CGUpgradeButton : MonoBehaviour
 
     public void PurchaseUpgrade()
     {
-        if (CGDataController.Instance.GetPoint() >= currentCost)
+        if (CGDataController.Instance.Point >= currentCost)
         {
-            CGDataController.Instance.SubPoint(currentCost);
+            CGDataController.Instance.Point -= currentCost;
             level++;
-            CGDataController.Instance.AddPerClick(pointByUpgrade);
+            CGDataController.Instance.PerClick += pointByUpgrade;
 
             UdateUpgrade();
             UpdateUI();

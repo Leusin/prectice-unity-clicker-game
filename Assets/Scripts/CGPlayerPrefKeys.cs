@@ -46,9 +46,17 @@ public static class CGPlayerPrefKeys
     {
         return $"{ItemButton}_{inItem.itemName}_pointPerSec";
     }
-    
+
     public static string GetIsPurchased(CGItemButton inItem)
     {
         return $"{ItemButton}_{inItem.itemName}_isPurchased";
+    }
+
+    //
+    // Off Game Time Section
+    //
+    public static string GetTimeKey()
+    {
+        return $"Time";
     }
 }

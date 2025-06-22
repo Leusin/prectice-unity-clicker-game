@@ -10,8 +10,8 @@ public class CGUIManager : MonoBehaviour
     void Update()
     {
         //pointDisplayer.text = "POINT: " + dataController.GetPoint();
-        pointDisplayer.text = $"POINT: {CGDataController.Instance.GetPoint()}";
-        perClickDisplayer.text = $"PER CLICK: {CGDataController.Instance.GetPerClick()}";
+        pointDisplayer.text = $"POINT: {CGDataController.Instance.Point}";
+        perClickDisplayer.text = $"PER CLICK: {CGDataController.Instance.PerClick}";
         perSecDisplayer.text = $"PER SEC: {CGDataController.Instance.GetTotalPointPerSec()}";
     }
 }

@@ -40,5 +40,9 @@ public abstract class CGSingleton<T> : MonoBehaviour where T : MonoBehaviour
         {
             Destroy(gameObject);
         }
+        
+        OnAwake();
     }
+
+    protected virtual void OnAwake() { }
 }

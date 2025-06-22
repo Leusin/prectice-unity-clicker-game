@@ -1,72 +1,73 @@
+using System;
+using System.Text;
 using UnityEngine;
 
 public class CGDataController : CGSingleton<CGDataController>
 {
-    private int _point = 0;
-    private int _perClick = 0;
-
     private CGItemButton[] itemButtons;
 
-    void Awake()
+    protected override void OnAwake()
     {
-        _point = PlayerPrefs.GetInt(CGPlayerPrefKeys.Point);
-        _perClick = PlayerPrefs.GetInt(CGPlayerPrefKeys.PerClick, 1);
+        itemButtons = UnityEngine.Object.FindObjectsByType<CGItemButton>(FindObjectsSortMode.None);
+    }
 
-        itemButtons = Object.FindObjectsByType<CGItemButton>(FindObjectsSortMode.None);
+    void Start()
+    {
+        Point += GetTotalPointPerSec() * TimeAfterLastPlay;
+        InvokeRepeating("UpdateLastPlayerDate", 0f, 5f);
+    }
+
+    public void DeleteAllData()
+    {
+        PlayerPrefs.DeleteAll();
     }
 
     //
     // Point Section
     //
 
-    public int GetPoint()
+    public long Point
     {
-        return _point;
-    }
-
-    public void SetPoint(int inPint)
-    {
-        _point = inPint;
-        PlayerPrefs.SetInt(CGPlayerPrefKeys.Point, _point);
-    }
-
-    public void AddPoint(int inPoint)
-    {
-        _point += inPoint;
-        SetPoint(_point);
-    }
-
-    public void SubPoint(int inPoint)
-    {
-        _point -= inPoint;
-        SetPoint(_point);
+        get
+        {
+            if (PlayerPrefs.HasKey(CGPlayerPrefKeys.Point))
+            {
+                string loaded = PlayerPrefs.GetString(CGPlayerPrefKeys.Point);
+                return long.Parse(loaded);
+            }
+            else
+            {
+                return 0;
+            }
+        }
+        set
+        {
+            PlayerPrefs.SetString(CGPlayerPrefKeys.Point, value.ToString());
+        }
     }
 
     //
     // PerClick Section
     //
 
-    public int GetPerClick()
+    public long PerClick
     {
-        return _perClick;
-    }
-
-    public void SetPerClick(int inPerClick)
-    {
-        _point = inPerClick;
-        PlayerPrefs.SetInt(CGPlayerPrefKeys.PerClick, inPerClick);
-    }
-
-    public void AddPerClick(int inPerClick)
-    {
-        _perClick += inPerClick;
-        PlayerPrefs.SetInt(CGPlayerPrefKeys.PerClick, _perClick);
-    }
-
-    public void SubPerClick(int inPerClick)
-    {
-        _perClick -= inPerClick;
-        PlayerPrefs.SetInt(CGPlayerPrefKeys.PerClick, _perClick);
+        get
+        {
+            if (PlayerPrefs.HasKey(CGPlayerPrefKeys.PerClick))
+            {
+                string loaded = PlayerPrefs.GetString(CGPlayerPrefKeys.PerClick);
+                return long.Parse(loaded);
+            }
+            else
+            {
+                return 1;
+            }
+        }
+        set
+        {
+            PlayerPrefs.SetString(CGPlayerPrefKeys.PerClick, value.ToString());
+        }
     }
 
     //
@@ -78,7 +79,11 @@ public class CGDataController : CGSingleton<CGDataController>
         int totalPointPerSec = 0;
         for (int i = 0; i < itemButtons.Length; i++)
         {
-            totalPointPerSec = itemButtons[i].pointPerSec;
+            if (itemButtons[i].isPurchased == true)
+            {
+                totalPointPerSec += itemButtons[i].pointPerSec;
+            }
+            totalPointPerSec += itemButtons[i].pointPerSec;
         }
 
         return totalPointPerSec;
@@ -94,7 +99,7 @@ public class CGDataController : CGSingleton<CGDataController>
         string keyPointByUpgrade = CGPlayerPrefKeys.GetPointbyUpgradeKey(inUpgrade);
         string keyCurrentCost = CGPlayerPrefKeys.GetCurrentCostKey(inUpgrade);
 
-        inUpgrade.level = PlayerPrefs.GetInt(keyLevel, 1);
+        inUpgrade.level = PlayerPrefs.GetInt(keyLevel);
         inUpgrade.pointByUpgrade = PlayerPrefs.GetInt(keyPointByUpgrade, inUpgrade.startPointByUpgrade);
         inUpgrade.currentCost = PlayerPrefs.GetInt(keyCurrentCost, inUpgrade.startCurrentCost);
     }
@@ -121,7 +126,7 @@ public class CGDataController : CGSingleton<CGDataController>
         string keyPointPerSec = CGPlayerPrefKeys.GetPointPerSecKey(inItem);
         string keyIsPurchased = CGPlayerPrefKeys.GetCurrentCostKey(inItem);
 
-        inItem.level = PlayerPrefs.GetInt(keyLevel);
+        inItem.level = PlayerPrefs.GetInt(keyLevel, 1);
         inItem.currentCost = PlayerPrefs.GetInt(keyCurrentCost, inItem.startCurrentCost);
         inItem.pointPerSec = PlayerPrefs.GetInt(keyPointPerSec, inItem.startPointPerSec);
 
@@ -154,5 +159,42 @@ public class CGDataController : CGSingleton<CGDataController>
         {
             PlayerPrefs.SetInt(keyIsPurchased, 0);
         }
+    }
+
+    //
+    // Time After Last Play Section
+    //
+    public int TimeAfterLastPlay
+    {
+        get
+        {
+            DateTime currentTime = DateTime.Now;
+            DateTime lastPlayDate = GetLastPlayerDate();
+
+            return (int)currentTime.Subtract(lastPlayDate).TotalSeconds;
+        }    
+    }
+
+    DateTime GetLastPlayerDate()
+    {
+        if (!PlayerPrefs.HasKey(CGPlayerPrefKeys.GetTimeKey()))
+        {
+            return DateTime.Now;
+        }
+
+        string timeBinaryInString = PlayerPrefs.GetString(CGPlayerPrefKeys.GetTimeKey());
+        long timeBinaryInLong = Convert.ToInt64(timeBinaryInString);
+
+        return DateTime.FromBinary(timeBinaryInLong);
+    }
+
+    void UpdateLastPlayerDate()
+    {
+        PlayerPrefs.SetString(CGPlayerPrefKeys.GetTimeKey(), DateTime.Now.ToBinary().ToString());
+    }
+
+    void OnApplicationQuit()
+    {
+        UpdateLastPlayerDate();
     }
 }

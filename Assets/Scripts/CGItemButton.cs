@@ -1,23 +1,51 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.UI;
 using TMPro;
 
 public class CGItemButton : MonoBehaviour
 {
+    //
+    // Key Name
+    //
+    public string itemName;
+
+
+    //
+    // UI Section
+    //
+
     public TMP_Text itemDisplayer;
 
-    public string itemName;
+    public CanvasGroup canvasGroup;
+    public Slider slider;
+
+    //
+    // Managed Data Section
+    //
+
     public int level;
+    public int pointPerSec;
+    [HideInInspector]
+    public bool isPurchased = false;
+
+    //
+    //
+    //
+
     [HideInInspector]
     public int currentCost = 1;
     public int startCurrentCost = 1;
     [HideInInspector]
-    public int pointPerSec;
     public int startPointPerSec = 1;
     public float costPow = 3.14f;
     public float upgradePow = 1.07f;
-    [HideInInspector]
-    public bool isPurchased = false;
+
+
+    void Awake()
+    {
+        slider ??= GetComponentInChildren<Slider>();
+    }
 
     void Start()
     {
@@ -27,15 +55,21 @@ public class CGItemButton : MonoBehaviour
         StartCoroutine(AddPointLoop());
 
         CGDataController.Instance.LoadItemButton(this);
+        UpdateItem();
+        UpdateUI();
+    }
+
+    void Update()
+    {
         UpdateUI();
     }
 
     public void PurchaseItem()
     {
-        if (CGDataController.Instance.GetPoint() >= currentCost)
+        if (CGDataController.Instance.Point >= currentCost)
         {
             isPurchased = true;
-            CGDataController.Instance.SubPoint(currentCost);
+            CGDataController.Instance.Point -= currentCost;
             level++;
 
             UpdateItem();
@@ -51,7 +85,7 @@ public class CGItemButton : MonoBehaviour
         {
             if (isPurchased)
             {
-                CGDataController.Instance.AddPoint(pointPerSec);
+                CGDataController.Instance.Point += pointPerSec;
             }
 
             yield return new WaitForSeconds(1.0f);
@@ -60,12 +94,19 @@ public class CGItemButton : MonoBehaviour
 
     public void UpdateItem()
     {
-        pointPerSec = startPointPerSec * (int)Mathf.Pow(upgradePow, level);
-        currentCost = startCurrentCost * (int)Mathf.Pow(costPow, level);
+        pointPerSec = startPointPerSec * (int)Mathf.Pow(level, upgradePow);
+        currentCost = startCurrentCost * (int)Mathf.Pow(level, costPow);
     }
 
     public void UpdateUI()
     {
-        itemDisplayer.text = $"[ {itemName} ]\nLevel: {level}\nCost: {currentCost}\nNext New  PointPerSec: {pointPerSec}\nIsPurchased: {isPurchased}";
+        itemDisplayer.text = $"[ {itemName} ]\nLevel: {level}\nCost: {currentCost}\nPointPerSec: {pointPerSec}";
+
+        slider.minValue = 0;
+        slider.maxValue = currentCost;
+
+        slider.value = CGDataController.Instance.Point;
+
+        canvasGroup.alpha = isPurchased ? 1.0f : 0.6f;
     }
 }
